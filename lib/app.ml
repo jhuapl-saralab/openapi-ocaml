@@ -67,7 +67,10 @@ let post ?tags ?summary ?description ?external_docs ?operation_id ?(parameters =
   let p = {p with post = Some (Spec.make_operation_object ?tags ?summary ?description
                                  ?external_docs ?operation_id
                                  ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
-                                 ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
+                                 ~request_body:(Option.value request_body
+                                                  ~default:(Spec.make_request_body_object ~content:[("text/*", `Assoc[])] ())
+                                                |> Option.return)
+                                 ~responses ?callbacks ?deprecated ?security ?servers ())} in
   let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
   {spec = {a.spec with paths =  paths};
    app = O.post path handler a.app}
@@ -91,7 +94,10 @@ let put ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = 
   let p = {p with put = Some (Spec.make_operation_object ?tags ?summary ?description
                                 ?external_docs ?operation_id
                                 ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
-                                ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
+                                ~request_body:(Option.value request_body
+                                                  ~default:(Spec.make_request_body_object ~content:[("text/*", `Assoc[])] ())
+                                               |> Option.return)
+                                ~responses ?callbacks ?deprecated ?security ?servers ())} in
   let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
   {spec = {a.spec with paths =  paths};
    app = O.put path handler a.app}
