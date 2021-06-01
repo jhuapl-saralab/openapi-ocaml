@@ -68,7 +68,8 @@ let post ?tags ?summary ?description ?external_docs ?operation_id ?(parameters =
                                  ?external_docs ?operation_id
                                  ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
                                  ~request_body:(Option.value request_body
-                                                  ~default:(Spec.make_request_body_object ~content:[("text/*", `Assoc[])] ())
+                                                  ~default:(Spec.make_request_body_object ~content:[("text/plain",
+                                                                                                     `Assoc["schema", `Assoc []])] ())
                                                 |> Option.return)
                                  ~responses ?callbacks ?deprecated ?security ?servers ())} in
   let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
@@ -95,7 +96,9 @@ let put ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = 
                                 ?external_docs ?operation_id
                                 ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
                                 ~request_body:(Option.value request_body
-                                                  ~default:(Spec.make_request_body_object ~content:[("text/*", `Assoc[])] ())
+                                                 ~default:(Spec.make_request_body_object ~content:["text/plain",
+                                                                                                   `Assoc["schema", `Assoc []]
+                                                                                                  ] ())
                                                |> Option.return)
                                 ~responses ?callbacks ?deprecated ?security ?servers ())} in
   let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
