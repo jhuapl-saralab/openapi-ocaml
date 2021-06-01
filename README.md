@@ -35,4 +35,15 @@ additional optional arguments to provide specification information for
 to document the endpoint. Check the type signatures of these methods
 for more information.
 
+Demo App
+========
+This library includes a demo app in `bin/demo` (that won't be installed
+by `opam`). To see the generated spec/documentation in action, run:
+```
+$ dune build
+$ ./_build/default/bin/demo.exe
+```
+Then browse to http://localhost:8888/docs
+
+
 
