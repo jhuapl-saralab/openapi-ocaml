@@ -25,6 +25,13 @@ let not_found f a = {a with app = O.not_found f a.app};;
 
 type route = string -> Rock.Handler.t -> builder;;
 
+let rewrite_path p =
+  String.split ~on:'/' p
+  |> List.map ~f:(fun c -> match String.chop_prefix ~prefix:":" c with
+      | Some c -> "{"^c^"}"
+      | _      -> c)
+  |> String.concat ~sep:"/"
+    
 let extract_path_params p = p
                             |> String.split ~on:'/'
                             |> List.filter_map
@@ -49,7 +56,7 @@ let get ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = 
                                 ?external_docs ?operation_id
                                 ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
                                 ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
-  let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
+  let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
   {spec = {a.spec with paths =  paths};
    app = O.get path handler a.app}
 
@@ -61,7 +68,7 @@ let post ?tags ?summary ?description ?external_docs ?operation_id ?(parameters =
                                  ?external_docs ?operation_id
                                  ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
                                  ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
-  let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
+  let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
   {spec = {a.spec with paths =  paths};
    app = O.post path handler a.app}
 
@@ -73,7 +80,7 @@ let delete ?tags ?summary ?description ?external_docs ?operation_id ?(parameters
                                    ?external_docs ?operation_id
                                    ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
                                    ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
-  let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
+  let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
   {spec = {a.spec with paths =  paths};
    app = O.delete path handler a.app}
 
@@ -85,7 +92,7 @@ let put ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = 
                                 ?external_docs ?operation_id
                                 ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
                                 ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
-  let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
+  let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
   {spec = {a.spec with paths =  paths};
    app = O.put path handler a.app}
 
@@ -97,7 +104,7 @@ let options ?tags ?summary ?description ?external_docs ?operation_id ?(parameter
                                     ?external_docs ?operation_id
                                     ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
                                     ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
-  let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
+  let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
   {spec = {a.spec with paths = paths};
    app = O.options path handler a.app}
 
@@ -109,7 +116,7 @@ let head ?tags ?summary ?description ?external_docs ?operation_id ?(parameters =
                                  ?external_docs ?operation_id
                                  ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
                                  ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
-  let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
+  let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
   {spec = {a.spec with paths =  paths};
    app = O.head path handler a.app}
 
@@ -121,7 +128,7 @@ let patch ?tags ?summary ?description ?external_docs ?operation_id ?(parameters 
                                   ?external_docs ?operation_id
                                   ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
                                   ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
-  let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
+  let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
   {spec = {a.spec with paths =  paths};
    app = O.patch path handler a.app}
 
