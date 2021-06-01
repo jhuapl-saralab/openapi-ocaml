@@ -25,79 +25,102 @@ let not_found f a = {a with app = O.not_found f a.app};;
 
 type route = string -> Rock.Handler.t -> builder;;
 
-let get ?tags ?summary ?description ?external_docs ?operation_id ?parameters ?request_body
+let extract_path_params p = p
+                            |> String.split ~on:'/'
+                            |> List.filter_map
+                              ~f:(fun s -> let open Option.Monad_infix in
+                                   String.chop_prefix ~prefix:":" s
+                                   >>| fun name ->
+                                   Spec.make_parameter_object ~name ~_in:"path" ~required:(Some true) ())
+
+let merge_parameters (orig : Spec.parameter_object list) (add : Spec.parameter_object list) =
+  List.fold_left ~init:orig add
+    ~f:(fun orig -> fun p ->
+        let open Spec in
+        match List.find ~f:(fun op -> op.name = p.name) orig with
+        | Some _  -> orig
+        | None    -> p::orig)
+    
+let get ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?request_body
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
           |> Option.value ~default:(Spec.make_path_object ()) in
   let p = {p with get = Some (Spec.make_operation_object ?tags ?summary ?description
-                                ?external_docs ?operation_id ?parameters ?request_body
-                                ~responses ?callbacks ?deprecated ?security ?servers ())} in
+                                ?external_docs ?operation_id
+                                ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
+                                ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
   let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
   {spec = {a.spec with paths =  paths};
    app = O.get path handler a.app}
 
-let post ?tags ?summary ?description ?external_docs ?operation_id ?parameters ?request_body
+let post ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?request_body
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
           |> Option.value ~default:(Spec.make_path_object ()) in
   let p = {p with post = Some (Spec.make_operation_object ?tags ?summary ?description
-                                 ?external_docs ?operation_id ?parameters ?request_body
-                                 ~responses ?callbacks ?deprecated ?security ?servers ())} in
+                                 ?external_docs ?operation_id
+                                 ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
+                                 ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
   let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
   {spec = {a.spec with paths =  paths};
    app = O.post path handler a.app}
 
-let delete ?tags ?summary ?description ?external_docs ?operation_id ?parameters ?request_body
+let delete ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?request_body
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
           |> Option.value ~default:(Spec.make_path_object ()) in
   let p = {p with delete = Some (Spec.make_operation_object ?tags ?summary ?description
-                                   ?external_docs ?operation_id ?parameters ?request_body
-                                   ~responses ?callbacks ?deprecated ?security ?servers ())} in
+                                   ?external_docs ?operation_id
+                                   ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
+                                   ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
   let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
   {spec = {a.spec with paths =  paths};
    app = O.delete path handler a.app}
 
-let put ?tags ?summary ?description ?external_docs ?operation_id ?parameters ?request_body
+let put ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?request_body
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
           |> Option.value ~default:(Spec.make_path_object ()) in
   let p = {p with put = Some (Spec.make_operation_object ?tags ?summary ?description
-                                ?external_docs ?operation_id ?parameters ?request_body
-                                ~responses ?callbacks ?deprecated ?security ?servers ())} in
+                                ?external_docs ?operation_id
+                                ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
+                                ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
   let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
   {spec = {a.spec with paths =  paths};
    app = O.put path handler a.app}
 
-let options ?tags ?summary ?description ?external_docs ?operation_id ?parameters ?request_body
+let options ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?request_body
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
           |> Option.value ~default:(Spec.make_path_object ()) in
   let p = {p with options = Some (Spec.make_operation_object ?tags ?summary ?description
-                                    ?external_docs ?operation_id ?parameters ?request_body
-                                    ~responses ?callbacks ?deprecated ?security ?servers ())} in
+                                    ?external_docs ?operation_id
+                                    ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
+                                    ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
   let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
   {spec = {a.spec with paths = paths};
    app = O.options path handler a.app}
 
-let head ?tags ?summary ?description ?external_docs ?operation_id ?parameters ?request_body
+let head ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?request_body
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
           |> Option.value ~default:(Spec.make_path_object ()) in
   let p = {p with head = Some (Spec.make_operation_object ?tags ?summary ?description
-                                 ?external_docs ?operation_id ?parameters ?request_body
-                                 ~responses ?callbacks ?deprecated ?security ?servers ())} in
+                                 ?external_docs ?operation_id
+                                 ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
+                                 ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
   let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
   {spec = {a.spec with paths =  paths};
    app = O.head path handler a.app}
 
-let patch ?tags ?summary ?description ?external_docs ?operation_id ?parameters ?request_body
+let patch ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?request_body
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
           |> Option.value ~default:(Spec.make_path_object ()) in
   let p = {p with patch = Some (Spec.make_operation_object ?tags ?summary ?description
-                                  ?external_docs ?operation_id ?parameters ?request_body
-                                  ~responses ?callbacks ?deprecated ?security ?servers ())} in
+                                  ?external_docs ?operation_id
+                                  ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
+                                  ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
   let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
   {spec = {a.spec with paths =  paths};
    app = O.patch path handler a.app}
