@@ -1,0 +1,24 @@
+variables:
+        OPAMROOT: "/tmp/opam-root.${CI_PROJECT_NAME}.${CI_PROJECT_ID}.${CI_PIPELINE_ID}"
+
+stages:
+  - build
+  - cleanup
+  - deploy
+build:
+  stage: build
+  script:
+    - "opam init -n --compiler 4.12.0"
+    - "eval $(opam config env)"
+    - "opam repo add gitlab https://gitlab.jhuapl.edu/sara/tools/opam-repository.git"
+    - "opam pin add -y openapi ."
+  tags:
+    - ubuntu
+
+cleanup:
+  stage: cleanup
+  when: always
+  script:
+    - "rm -r ${OPAMROOT}"
+  tags:
+    - ubuntu
