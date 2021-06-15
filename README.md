@@ -25,7 +25,7 @@ Just do:
 ```
 let open Opium in
 let module App = Openapi.App in
-App.empty ()
+App.empty
 |> App.get "/path/:foo" (fun h -> Response.of_plain_text "hello world")
 |> App.run_command
 ```
