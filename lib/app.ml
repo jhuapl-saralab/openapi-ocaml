@@ -1,6 +1,5 @@
 open Core;;
 open Base.Poly;;
-
 module O = Opium.App;;
 
 type t = {
@@ -14,7 +13,91 @@ let empty ?(title = "Application") ?description ?terms_of_service ?contact ?lice
    app = O.empty}
 
 type builder = t -> t
+let title t a = {a with spec = {a.spec with info = {a.spec.info with title = t}}}
+let description d a =
+    {a with spec = {a.spec with info = {a.spec.info with description = Some d}}}
+let terms_of_service t a =
+    {a with spec = {a.spec with info = {a.spec.info with terms_of_service = Some t}}}
+let contact c a =
+    {a with spec = {a.spec with info = {a.spec.info with contact = Some c}}}
+let license l a =
+    {a with spec = {a.spec with info = {a.spec.info with license = Some l}}}
 let version v a = {a with spec = {a.spec with info = {a.spec.info with version = v}}};;
+
+type 'a or_ref = 'a Json_schema.or_ref;;
+
+let schema n s a =
+    let open Spec in
+    Option.value ~default:(make_components_object ()) a.spec.components
+    |> (fun cs -> Option.value ~default:[] cs.schemas
+                  |> fun ss -> {cs with schemas = Some ((n,s)::ss)})
+    |> Option.return
+    |> fun cs -> {a with spec = {a.spec with components = cs}}
+
+let response n r a =
+    let open Spec in
+    Option.value ~default:(make_components_object ()) a.spec.components
+    |> (fun cs -> Option.value ~default:[] cs.responses
+                  |> fun rs -> {cs with responses = Some ((n,r)::rs)})
+    |> Option.return
+    |> fun cs -> {a with spec = {a.spec with components = cs}}
+
+let parameter n p a =
+    let open Spec in
+    Option.value ~default:(make_components_object ()) a.spec.components
+    |> (fun cs -> Option.value ~default:[] cs.parameters
+                  |> fun ps -> {cs with parameters = Some ((n,p)::ps)})
+    |> Option.return
+    |> fun cs -> {a with spec = {a.spec with components = cs}}
+
+let example n ex a =
+    let open Spec in
+    Option.value ~default:(make_components_object ()) a.spec.components
+    |> (fun cs -> Option.value ~default:[] cs.examples
+                  |> fun ss -> {cs with examples = Some ((n,ex)::ss)})
+    |> Option.return
+    |> fun cs -> {a with spec = {a.spec with components = cs}}
+
+let request_body n r a =
+    let open Spec in
+    Option.value ~default:(make_components_object ()) a.spec.components
+    |> (fun cs -> Option.value ~default:[] cs.request_bodies
+                  |> fun ss -> {cs with request_bodies = Some ((n,r)::ss)})
+    |> Option.return
+    |> fun cs -> {a with spec = {a.spec with components = cs}}
+
+let header n h a =
+    let open Spec in
+    Option.value ~default:(make_components_object ()) a.spec.components
+    |> (fun cs -> Option.value ~default:[] cs.headers
+                  |> fun ss -> {cs with headers = Some ((n,h)::ss)})
+    |> Option.return
+    |> fun cs -> {a with spec = {a.spec with components = cs}}
+
+let security_scheme n s a =
+    let open Spec in
+    Option.value ~default:(make_components_object ()) a.spec.components
+    |> (fun cs -> Option.value ~default:[] cs.security_schemes
+                  |> fun ss -> {cs with security_schemes = Some ((n,s)::ss)})
+    |> Option.return
+    |> fun cs -> {a with spec = {a.spec with components = cs}}
+
+let link n l a =
+    let open Spec in
+    Option.value ~default:(make_components_object ()) a.spec.components
+    |> (fun cs -> Option.value ~default:[] cs.links
+                  |> fun ss -> {cs with links = Some ((n,l)::ss)})
+    |> Option.return
+    |> fun cs -> {a with spec = {a.spec with components = cs}}
+
+let callback n c a =
+    let open Spec in
+    Option.value ~default:(make_components_object ()) a.spec.components
+    |> (fun cs -> Option.value ~default:[] cs.callbacks
+                  |> fun ss -> {cs with callbacks = Some ((n,c)::ss)})
+    |> Option.return
+    |> fun cs -> {a with spec = {a.spec with components = cs}}
+
 let host s a = {a with app = O.host s a.app};;
 let backlog i a = {a with app = O.backlog i a.app};;
 let port p a = {a with app = O.port p a.app};;
@@ -24,6 +107,20 @@ let cmd_name s a = {spec = {a.spec with info = {a.spec.info with title = s}};
 let not_found f a = {a with app = O.not_found f a.app};;
 
 type route = string -> Rock.Handler.t -> builder;;
+
+type api_route = ?tags:string list option ->
+    ?summary:string option ->
+    ?description:string option ->
+    ?external_docs:Spec.external_documentation_object option ->
+    ?operation_id:string option ->
+    ?parameters:Spec.parameter_object Json_schema.or_ref list ->
+    ?request_body:Spec.request_body_object Json_schema.or_ref option ->
+    ?responses:Spec.responses_object ->
+    ?callbacks:Json_schema.any Json_schema.or_ref Json_schema.map option ->
+    ?deprecated:bool option ->
+    ?security:Json_schema.any option ->
+    ?servers:Spec.server_object list option ->
+    route;;
 
 let rewrite_path p =
   String.split ~on:'/' p
@@ -38,16 +135,24 @@ let extract_path_params p = p
                               ~f:(fun s -> let open Option.Monad_infix in
                                    String.chop_prefix ~prefix:":" s
                                    >>| fun name ->
-                                   Spec.make_parameter_object ~name ~_in:"path" ~required:(Some true) ())
+                                   Json_schema.Obj (Spec.make_parameter_object ~name ~_in:"path" ~required:(Some true) ()))
 
-let merge_parameters (orig : Spec.parameter_object list) (add : Spec.parameter_object list) =
-  List.fold_left ~init:orig add
-    ~f:(fun orig -> fun p ->
+let merge_parameters orig add =
+    let same_param
+            (p1 :Spec.parameter_object Json_schema.or_ref)
+            (p2 : Spec.parameter_object Json_schema.or_ref) =
+        let open Json_schema in
         let open Spec in
-        match List.find ~f:(fun op -> op.name = p.name) orig with
-        | Some _  -> orig
-        | None    -> p::orig)
-    
+        match (p1,p2) with
+        | Ref r1, Ref r2 -> r1 = r2
+        | Obj p1, Obj p2 -> p1.name = p2.name
+        | _ -> false in
+    List.fold_left ~init:orig add
+        ~f:(fun orig -> fun p ->               
+               match List.find ~f:(same_param p) orig with
+               | Some _  -> orig
+               | None    -> p::orig)
+        
 let get ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?request_body
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
@@ -60,7 +165,7 @@ let get ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = 
   {spec = {a.spec with paths =  paths};
    app = O.get path handler a.app}
 
-let post ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?request_body
+let post ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?(request_body = None)
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
           |> Option.value ~default:(Spec.make_path_object ()) in
@@ -69,7 +174,8 @@ let post ?tags ?summary ?description ?external_docs ?operation_id ?(parameters =
                                  ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
                                  ~request_body:(Option.value request_body
                                                   ~default:(Spec.make_request_body_object ~content:[("text/plain",
-                                                                                                     `Assoc["schema", `Assoc []])] ())
+                                                                                                     `Assoc["schema", `Assoc []])] ()
+                                                            |> fun o -> Json_schema.Obj o)
                                                 |> Option.return)
                                  ~responses ?callbacks ?deprecated ?security ?servers ())} in
   let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
@@ -88,7 +194,7 @@ let delete ?tags ?summary ?description ?external_docs ?operation_id ?(parameters
   {spec = {a.spec with paths =  paths};
    app = O.delete path handler a.app}
 
-let put ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?request_body
+let put ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?(request_body = None)
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
           |> Option.value ~default:(Spec.make_path_object ()) in
@@ -98,7 +204,8 @@ let put ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = 
                                 ~request_body:(Option.value request_body
                                                  ~default:(Spec.make_request_body_object ~content:["text/plain",
                                                                                                    `Assoc["schema", `Assoc []]
-                                                                                                  ] ())
+                                                                                                  ] ()
+                                                           |> (fun o -> Json_schema.Obj o))
                                                |> Option.return)
                                 ~responses ?callbacks ?deprecated ?security ?servers ())} in
   let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
