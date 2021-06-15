@@ -1,11 +1,6 @@
 type t;;
 val to_handler : t -> Rock.Handler.t
-val empty : ?title:string ->
-    ?description:string option ->
-    ?terms_of_service : string option ->
-    ?contact : Spec.contact_object option ->
-    ?license : Spec.license_object option ->
-    ?version : string -> unit -> t;;
+val empty : t;;
 
 type builder = t -> t;;
 

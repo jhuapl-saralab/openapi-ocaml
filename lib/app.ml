@@ -8,8 +8,8 @@ type t = {
 };;
 
 let to_handler a = O.to_handler a.app
-let empty ?(title = "Application") ?description ?terms_of_service ?contact ?license ?(version = "0.1") () =
-  {spec = Spec.make ~openapi:"3.0.0" ~info:(Spec.make_info_object ~title ?description ?terms_of_service ?contact ?license ~version ()) ~paths:[] ();
+let empty =
+  {spec = Spec.make ~openapi:"3.0.0" ~info:(Spec.make_info_object ~title:"Application" ~version:"0.1" ()) ~paths:[] ();
    app = O.empty}
 
 type builder = t -> t

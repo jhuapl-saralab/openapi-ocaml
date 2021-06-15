@@ -1,7 +1,7 @@
 open Opium;;
 module App = Openapi.App;;
 
-App.empty ()
+App.empty
 |> App.get "/foo/:foo" (fun req -> Response.of_json (`Assoc ["foo", `String (Router.param req "foo")])
                                    |> Lwt.return)
 |> App.post
