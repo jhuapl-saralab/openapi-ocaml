@@ -68,9 +68,37 @@ type response_object = {
 
 type responses_object = response_object map [@@deriving show, yojson];;
 
+type parameter_location = Query | Header | Path | Cookie [@@deriving show,yojson];;
+let parameter_location_of_yojson = function
+  | `String "query"   -> Query
+  | `String "header"  -> Header
+  | `String "path"    -> Path
+  | `String "cookie" -> Cookie
+  | x -> let open Ppx_yojson_conv_lib.Yojson_conv in    
+    raise (Of_yojson_error
+             (Failure (sprintf "%s: unexpected value must be \"query\", \"header\", \"path\", or \"cookie\"" __LOC__), x));;
+
+let yojson_of_parameter_location = function
+  | Query  -> `String "query"
+  | Header -> `String "header"
+  | Path   -> `String "path"
+  | Cookie -> `String "cookie"
+                
+type parameter_style = Simple | Form [@@deriving show];;
+let parameter_style_of_yojson = function
+  | `String "simple" -> Simple
+  | `String "form"   -> Form
+  | x -> let open Ppx_yojson_conv_lib.Yojson_conv in
+    raise (Of_yojson_error (Failure (sprintf "%s: unexpected value must be \"simple\" or \"form\"" __LOC__), x));;
+;;
+
+let yojson_of_parameter_style = function
+  | Simple -> `String "simple"
+  | Form   -> `String "form"
+
 type parameter_object = {
   name              : string;
-  _in               : string [@key "in"];
+  _in               : parameter_location [@key "in"];
   description       : string option
                       [@default None] [@yojson_drop_default (=)];
   required          : bool option
@@ -79,6 +107,10 @@ type parameter_object = {
                       [@default None] [@yojson_drop_default (=)];
   allow_empty_value : bool option [@key "allowEmptyValue"]
                       [@default None] [@yojson_drop_default (=)];
+  style             : parameter_style option [@default None] [@yojson_drop_default (=)];
+  schema            : schema or_ref option [@default None] [@yojson_drop_default (=)];
+  example           : any option [@default None] [@yojson_drop_default (=)]
+    
 } [@@deriving make,show,yojson];;
 
 type example_object = {

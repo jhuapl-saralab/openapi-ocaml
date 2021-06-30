@@ -135,7 +135,7 @@ let extract_path_params p = p
                               ~f:(fun s -> let open Option.Monad_infix in
                                    String.chop_prefix ~prefix:":" s
                                    >>| fun name ->
-                                   Json_schema.Obj (Spec.make_parameter_object ~name ~_in:"path" ~required:(Some true) ()))
+                                   Json_schema.Obj (Spec.make_parameter_object ~name ~_in:Spec.Path ~required:(Some true) ()))
 
 let merge_parameters orig add =
     let same_param
