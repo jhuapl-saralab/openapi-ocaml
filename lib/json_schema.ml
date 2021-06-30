@@ -76,25 +76,27 @@ let yojson_of_json_schema_type : json_schema_type -> Yojson.Safe.t = function
     | x -> `String (string_of_json_schema_type x)
                
 let pp_json_schema_type fmt x = Yojson.Safe.pp fmt (yojson_of_json_schema_type x);;
- 
+
 type schema = {
-    schema : string option
-             [@key "$schema"] [@default None]
-             [@yojson_drop_default (=)];
-    _id : string [@key "$id"];
-    title : string option
-            [@default None] [@yojson_drop_default (=)];
-    description : string option
-                  [@default None] [@yojson_drop_default (=)];
-    typ : json_schema_type or_ref option
-          [@key "type"] [@default None]
-          [@yojson_drop_default (=)];
-    enum : any list option
-           [@default None] [@yojson_drop_default (=)];
-    const : any option
-            [@default None] [@yojson_drop_default (=)];    
-    properties : schema map option
-                 [@default None] [@yojson_drop_default (=)];
+  schema      : string option
+                [@key "$schema"] [@default None]
+                [@yojson_drop_default (=)];
+  _id         : string option
+                [@key "$id"] [@default None]
+                [@yojson_drop_default (=)];
+  title       : string option
+                [@default None] [@yojson_drop_default (=)];
+  description : string option
+                [@default None] [@yojson_drop_default (=)];
+  typ         : json_schema_type or_ref option
+                [@key "type"] [@default None]
+                [@yojson_drop_default (=)];
+  enum        : any list option
+                [@default None] [@yojson_drop_default (=)];
+  const       : any option
+                [@default None] [@yojson_drop_default (=)];    
+  properties  : schema map option
+                [@default None] [@yojson_drop_default (=)];
 } [@@deriving make,show,yojson]
 [@@yojson.allow_extra_fields]
 ;;
