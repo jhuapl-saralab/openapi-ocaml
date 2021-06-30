@@ -122,20 +122,33 @@ type api_route = ?tags:string list option ->
     ?servers:Spec.server_object list option ->
     route;;
 
+(* Opium uses the following conventions for path arguments:
+ *   + anything prefixed with a colon is a named param 
+ *     (e.g., ":foo" is the param "foo")
+ *   + a single splat ("*") is an anonymous param
+ *   + the last element may be a double splat ("**") to glob 
+ *     the rest of the uri into a single (path) param.
+ *)
 let rewrite_path p =
-  String.split ~on:'/' p
-  |> List.map ~f:(fun c -> match String.chop_prefix ~prefix:":" c with
-      | Some c -> "{"^c^"}"
-      | _      -> c)
-  |> String.concat ~sep:"/"
-    
-let extract_path_params p = p
-                            |> String.split ~on:'/'
-                            |> List.filter_map
-                              ~f:(fun s -> let open Option.Monad_infix in
-                                   String.chop_prefix ~prefix:":" s
-                                   >>| fun name ->
-                                   Json_schema.Obj (Spec.make_parameter_object ~name ~_in:Spec.Path ~required:(Some true) ()))
+  let components = String.split ~on:'/' p in
+  let named_params = List.filter_map ~f:(String.chop_prefix ~prefix:"s") components in
+  let max_anon = List.fold ~init:(-1) named_params
+      ~f:(fun i -> fun s -> try Scanf.sscanf s "anon%d"
+                                  (fun d -> if d > i then d else i)
+           with | Scanf.Scan_failure _ -> i) in
+  let parse_component s = (match String.chop_prefix ~prefix:":" s with
+      | Some c -> `Named c
+      | None   -> if s = "*" || s = "**" then `Anon else `Match) in
+  let mk_param n = Spec.(make_parameter_object ~name:n ~_in:Path ~required:(Some true) ())
+                   |> Json_schema.Helpers.obj in
+  List.fold ~init:([],[],max_anon+1) components
+    ~f:(fun (cs,ps,anon_count) -> fun c ->
+        match parse_component c with
+        | `Named c -> (("{"^c^"}")::cs, (mk_param c)::ps, anon_count)
+        | `Anon    -> (let name = sprintf "anon%d" anon_count in
+                       (("{"^name^"}")::cs, (mk_param name)::ps, anon_count+1))
+        | `Match   -> (c::cs, ps, anon_count))
+  |> function (cs,ps,_) -> (String.concat ~sep:"/" (List.rev cs), ps);;
 
 let merge_parameters orig add =
     let same_param
@@ -155,13 +168,14 @@ let merge_parameters orig add =
         
 let get ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?request_body
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
+  let (path,pathps) = rewrite_path path in
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
           |> Option.value ~default:(Spec.make_path_object ()) in
   let p = {p with get = Some (Spec.make_operation_object ?tags ?summary ?description
                                 ?external_docs ?operation_id
-                                ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
+                                ~parameters:(Some (merge_parameters parameters pathps))
                                 ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
-  let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
+  let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
   {spec = {a.spec with paths =  paths};
    app = O.get path handler a.app}
 
@@ -173,79 +187,85 @@ let default_request_body = (let open Json_schema in
                            
 let post ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?(request_body = None)
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
+  let (path,pathps) = rewrite_path path in
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
           |> Option.value ~default:(Spec.make_path_object ()) in
   let p = {p with post = Some (Spec.make_operation_object ?tags ?summary ?description
                                  ?external_docs ?operation_id
-                                 ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
+                                 ~parameters:(Some (merge_parameters parameters pathps))
                                  ~request_body:(Option.value request_body
                                                   ~default:default_request_body
                                                 |> Option.return)
                                  ~responses ?callbacks ?deprecated ?security ?servers ())} in
-  let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
+  let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
   {spec = {a.spec with paths =  paths};
    app = O.post path handler a.app}
 
 let delete ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?request_body
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
+  let (path,pathps) = rewrite_path path in
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
           |> Option.value ~default:(Spec.make_path_object ()) in
   let p = {p with delete = Some (Spec.make_operation_object ?tags ?summary ?description
                                    ?external_docs ?operation_id
-                                   ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
+                                   ~parameters:(Some (merge_parameters parameters pathps))
                                    ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
-  let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
+  let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
   {spec = {a.spec with paths =  paths};
    app = O.delete path handler a.app}
 
 let put ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?(request_body = None)
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
+  let (path,pathps) = rewrite_path path in
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
           |> Option.value ~default:(Spec.make_path_object ()) in
   let p = {p with put = Some (Spec.make_operation_object ?tags ?summary ?description
                                 ?external_docs ?operation_id
-                                ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
+                                ~parameters:(Some (merge_parameters parameters pathps))
                                 ~request_body:(Option.value request_body
                                                  ~default:default_request_body
                                                |> Option.return)
                                 ~responses ?callbacks ?deprecated ?security ?servers ())} in
-  let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
+  let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
   {spec = {a.spec with paths =  paths};
    app = O.put path handler a.app}
 
 let options ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?request_body
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
+  let (path,pathps) = rewrite_path path in
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
           |> Option.value ~default:(Spec.make_path_object ()) in
   let p = {p with options = Some (Spec.make_operation_object ?tags ?summary ?description
                                     ?external_docs ?operation_id
-                                    ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
+                                    ~parameters:(Some (merge_parameters parameters pathps))
                                     ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
-  let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
+  let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
   {spec = {a.spec with paths = paths};
    app = O.options path handler a.app}
 
 let head ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?request_body
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
+  let (path,pathps) = rewrite_path path in
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
           |> Option.value ~default:(Spec.make_path_object ()) in
   let p = {p with head = Some (Spec.make_operation_object ?tags ?summary ?description
                                  ?external_docs ?operation_id
-                                 ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
+                                 ~parameters:(Some (merge_parameters parameters pathps))
                                  ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
-  let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
+  let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
   {spec = {a.spec with paths =  paths};
    app = O.head path handler a.app}
 
 let patch ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?request_body
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
+  let (path,pathps) = rewrite_path path in
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
           |> Option.value ~default:(Spec.make_path_object ()) in
   let p = {p with patch = Some (Spec.make_operation_object ?tags ?summary ?description
                                   ?external_docs ?operation_id
-                                  ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
+                                  ~parameters:(Some (merge_parameters parameters pathps))
                                   ?request_body ~responses ?callbacks ?deprecated ?security ?servers ())} in
-  let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
+  let paths = List.Assoc.add ~equal:(=) a.spec.paths path p in
   {spec = {a.spec with paths =  paths};
    app = O.patch path handler a.app}
 
