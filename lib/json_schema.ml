@@ -99,6 +99,49 @@ type schema = {
                 [@default None] [@yojson_drop_default (=)];
   items       : schema or_ref option
                 [@default None] [@yojson_drop_default (=)];
+  format      : string option
+                [@default None] [@yojson_drop_default (=)];
 } [@@deriving make,show,yojson]
 [@@yojson.allow_extra_fields]
 ;;
+
+module Helpers = struct
+  let obj o = Obj o;;
+  let ref r = Ref r;;
+
+  let empty    = make_schema ();;
+  let title t s = {s with title = Some t};;
+  let description d s = {s with description = Some d};;
+  let typ t s  = {s with typ = Some t};;
+  let format f s = {s with format = Some f};;
+  let items is s = {s with items = Some is};;
+  let enum xs s  = {s with enum  = Some xs};;
+  let properties ps s = {s with properties = Some ps};;
+  let property k v s = {s with properties = Option.value ~default:[] s.properties
+                                            |> (fun ps -> ps@[k,v])
+                                            |> Option.return};;
+  let null          = empty |> typ (Obj Null);;
+  let boolean       = empty |> typ (Obj Boolean);;
+  let _object       = empty |> typ (Obj Object);;
+  let array         = empty |> typ (Obj Array);;
+  let number        = empty |> typ (Obj Number);;
+  let string        = empty |> typ (Obj String);;
+  let integer       = empty |> typ (Obj Integer);;
+  let type_array xs = empty |> typ (Obj (TypeArray xs));;
+
+  let array_of s = array |> items s;;
+
+  let datetime      = string |> format "date-time";;
+  let time          = string |> format "time";;
+  let date          = string |> format "date";;
+  let email         = string |> format "email";;
+  let idn_email     = string |> format "idn-email";;
+  let hostname      = string |> format "hostname";;
+  let idn_hostname  = string |> format "idn-hostname";;
+  let ipv4          = string |> format "ipv4";;
+  let ipv6          = string |> format "ipv6";;
+  let uri           = string |> format "uri";;
+  let uri_reference = string |> format "uri-reference";;
+  let iri           = string |> format "iri";;
+  let iri_reference = string |> format "iri-reference";;
+end;;
