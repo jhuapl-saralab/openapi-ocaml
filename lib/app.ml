@@ -165,6 +165,12 @@ let get ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = 
   {spec = {a.spec with paths =  paths};
    app = O.get path handler a.app}
 
+let default_request_body = (let open Json_schema in
+                            let open Spec in
+                            let mt = make_media_type_object ~schema:(Some (Obj (make_schema ()))) () in
+                            Spec.make_request_body_object ~content:["text/plain", mt] ()
+                            |> fun o -> Obj o)
+                           
 let post ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = []) ?(request_body = None)
     ?(responses = []) ?callbacks ?deprecated ?security ?servers path handler a =
   let p = List.Assoc.find ~equal:(=) a.spec.paths path
@@ -173,9 +179,7 @@ let post ?tags ?summary ?description ?external_docs ?operation_id ?(parameters =
                                  ?external_docs ?operation_id
                                  ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
                                  ~request_body:(Option.value request_body
-                                                  ~default:(Spec.make_request_body_object ~content:[("text/plain",
-                                                                                                     `Assoc["schema", `Assoc []])] ()
-                                                            |> fun o -> Json_schema.Obj o)
+                                                  ~default:default_request_body
                                                 |> Option.return)
                                  ~responses ?callbacks ?deprecated ?security ?servers ())} in
   let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in
@@ -202,10 +206,7 @@ let put ?tags ?summary ?description ?external_docs ?operation_id ?(parameters = 
                                 ?external_docs ?operation_id
                                 ~parameters:(Some (merge_parameters parameters (extract_path_params path)))
                                 ~request_body:(Option.value request_body
-                                                 ~default:(Spec.make_request_body_object ~content:["text/plain",
-                                                                                                   `Assoc["schema", `Assoc []]
-                                                                                                  ] ()
-                                                           |> (fun o -> Json_schema.Obj o))
+                                                 ~default:default_request_body
                                                |> Option.return)
                                 ~responses ?callbacks ?deprecated ?security ?servers ())} in
   let paths = List.Assoc.add ~equal:(=) a.spec.paths (rewrite_path path) p in

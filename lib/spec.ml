@@ -125,15 +125,15 @@ type example_object = {
 } [@@deriving make, show, yojson];;
 
 type media_type_object = {
-    schema   : schema or_ref option;
-    example  : any option;
-    examples : example_object or_ref map;
-    encoding : any map option (* fixme: should be an encoding_object map *)
+    schema   : schema or_ref option [@default None] [@yojson_drop_default (=)];
+    example  : any option [@default None] [@yojson_drop_default (=)];
+    examples : example_object or_ref map option [@default None] [@yojson_drop_default (=)];
+    encoding : any map option [@default None] [@yojson_drop_default (=)] (* fixme: should be an encoding_object map *)
 } [@@deriving make, show, yojson];;
 
 type request_body_object = {
   description : string option [@default None] [@yojson_drop_default (=)];
-  content     : any map;
+  content     : media_type_object map;
   required    : bool option [@default None] [@yojson_drop_default (=)]
 } [@@deriving make,show,yojson];;
 
