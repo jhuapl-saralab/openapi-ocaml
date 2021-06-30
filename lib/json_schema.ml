@@ -97,6 +97,8 @@ type schema = {
                 [@default None] [@yojson_drop_default (=)];    
   properties  : schema map option
                 [@default None] [@yojson_drop_default (=)];
+  items       : schema or_ref option
+                [@default None] [@yojson_drop_default (=)];
 } [@@deriving make,show,yojson]
 [@@yojson.allow_extra_fields]
 ;;
