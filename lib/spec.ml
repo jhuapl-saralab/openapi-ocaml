@@ -54,11 +54,31 @@ type header_object = {
                       [@yojson.option];
 } [@@deriving make,show,yojson];;
 
+type example_object = {
+  summary       : string option
+                  [@yojson.option];
+  description   : string option
+                  [@yojson.option];
+  value         : any option
+                  [@yojson.option];
+  externalValue : string option
+                  [@yojson.option];
+} [@@deriving make, show, yojson];;
+
+type media_type_object = {
+  schema   : schema or_ref option [@yojson.option];
+  example  : any option [@yojson.option];
+  examples : example_object or_ref map option [@yojson.option];
+  encoding : any map option [@yojson.option] (* fixme: should be an encoding_object map *)
+} [@@deriving make, show, yojson];;
+
 type response_object = {
   description : string;
   headers     : header_object or_ref map option
                 [@yojson.option];
-  link        : link_object or_ref map option
+  content     : media_type_object map option
+                [@yojson.option];
+  links       : link_object or_ref map option
                 [@yojson.option];
 } [@@deriving make,show,yojson];;
 
@@ -107,24 +127,6 @@ type parameter_object = {
   schema            : schema or_ref option [@yojson.option];
   example           : any option [@yojson.option]
 } [@@deriving make,show,yojson];;
-
-type example_object = {
-  summary       : string option
-                  [@yojson.option];
-  description   : string option
-                  [@yojson.option];
-  value         : any option
-                  [@yojson.option];
-  externalValue : string option
-                  [@yojson.option];
-} [@@deriving make, show, yojson];;
-
-type media_type_object = {
-  schema   : schema or_ref option [@yojson.option];
-  example  : any option [@yojson.option];
-  examples : example_object or_ref map option [@yojson.option];
-  encoding : any map option [@yojson.option] (* fixme: should be an encoding_object map *)
-} [@@deriving make, show, yojson];;
 
 type request_body_object = {
   description : string option [@yojson.option];
