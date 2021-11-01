@@ -42,8 +42,7 @@ type json_schema_type =
     | Array
     | Number
     | String
-    | Integer
-    | TypeArray of string list;;
+    | Integer;;
 
 let string_of_json_schema_type = function
     | Null -> "null"
@@ -52,8 +51,7 @@ let string_of_json_schema_type = function
     | Array -> "array"
     | Number -> "number"
     | String -> "string"
-    | Integer -> "integer"
-    | TypeArray ts -> sprintf "[%s]" (String.concat ~sep:", " ts)
+    | Integer -> "integer";;
 
 let json_schema_type_of_yojson : Yojson.Safe.t -> json_schema_type = function
     | `String "null"    -> Null
@@ -63,16 +61,10 @@ let json_schema_type_of_yojson : Yojson.Safe.t -> json_schema_type = function
     | `String "number"  -> Number
     | `String "string"  -> String
     | `String "integer" -> Integer
-    | `List xs          -> TypeArray
-                               (List.map ~f:(function
-                                                 | `String x -> x
-                                                 | x         -> raise (Yojson_conv.Of_yojson_error (Failure "unexpected input", x)))
-                                      xs)
     | x -> raise (Yojson_conv.Of_yojson_error (Failure "unexpected input", x))
                        
-let yojson_of_json_schema_type : json_schema_type -> Yojson.Safe.t = function
-    | TypeArray ts -> `List (List.map ~f:(fun s -> `String s) ts)
-    | x -> `String (string_of_json_schema_type x)
+let yojson_of_json_schema_type : json_schema_type -> Yojson.Safe.t  =
+  fun x -> `String (string_of_json_schema_type x)
                
 let pp_json_schema_type fmt x = Yojson.Safe.pp fmt (yojson_of_json_schema_type x);;
 
@@ -119,7 +111,6 @@ module Helpers = struct
   let number        = empty |> typ (Obj Number);;
   let string        = empty |> typ (Obj String);;
   let integer       = empty |> typ (Obj Integer);;
-  let type_array xs = empty |> typ (Obj (TypeArray xs));;
 
   let array_of s = array |> items s;;
 
