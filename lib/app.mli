@@ -32,18 +32,18 @@ val not_found        : (Opium.Request.t ->  (Httpaf.Headers.t * Rock.Body.t) Lwt
 
 type route = string -> Rock.Handler.t -> builder;;
 
-type api_route = ?tags:string list option ->
-    ?summary:string option ->
-    ?description:string option ->
-    ?external_docs:Spec.external_documentation_object option ->
-    ?operation_id:string option ->
+type api_route = ?tags:string list ->
+    ?summary:string ->
+    ?description:string ->
+    ?external_docs:Spec.external_documentation_object ->
+    ?operation_id:string ->
     ?parameters:Spec.parameter_object Json_schema.or_ref list ->
-    ?request_body:Spec.request_body_object Json_schema.or_ref option ->
+    ?request_body:Spec.request_body_object Json_schema.or_ref ->
     ?responses:Spec.responses_object ->
-    ?callbacks:Json_schema.any Json_schema.or_ref Json_schema.map option ->
-    ?deprecated:bool option ->
-    ?security:Json_schema.any option ->
-    ?servers:Spec.server_object list option ->
+    ?callbacks:Json_schema.any Json_schema.or_ref Json_schema.map ->
+    ?deprecated:bool ->
+    ?security:Json_schema.any ->
+    ?servers:Spec.server_object list ->
     route;;
 
 val get : api_route;;

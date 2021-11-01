@@ -81,7 +81,7 @@ type schema = {
   schema      : string option
                 [@key "$schema"] [@default None]
                 [@yojson_drop_default (=)];
-  _id         : string option
+  id_         : string option
                 [@key "$id"] [@default None]
                 [@yojson_drop_default (=)];
   title       : string option
@@ -122,7 +122,7 @@ module Helpers = struct
                                             |> Option.return};;
   let null          = empty |> typ (Obj Null);;
   let boolean       = empty |> typ (Obj Boolean);;
-  let _object       = empty |> typ (Obj Object);;
+  let object_       = empty |> typ (Obj Object);;
   let array         = empty |> typ (Obj Array);;
   let number        = empty |> typ (Obj Number);;
   let string        = empty |> typ (Obj String);;
