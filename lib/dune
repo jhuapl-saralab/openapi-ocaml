@@ -2,6 +2,6 @@
  (name openapi)
  (public_name openapi)
  (modules Spec App Json_schema)
- (libraries yojson core sara_util opium)
+ (libraries yojson core opium)
  (preprocess (pps ppx_yojson_conv ppx_deriving.std))
  )

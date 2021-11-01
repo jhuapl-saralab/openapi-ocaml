@@ -1,1 +1,21 @@
 (lang dune 2.8)
+(generate_opam_files true)
+(name openapi)
+
+(package
+ (name openapi)
+ (version 0.3.2)
+ (synopsis "Openapi documentation generation for Opium")
+ (description "Shim layer around Opium.App (https://github.com/rgrinberg/opium/) for producing Openapi documentation pages")
+ (license "BSD 3-Clause")
+ (authors "J. Aaron Pendergrass <james.pendergrass@jhuapl.edu>")
+ (maintainers "J. Aaron Pendergrass <james.pendergrass@jhuapl.edu>")
+ (homepage "https://github.com/jhuapl-saralab/openapi-ocaml")
+ (bug_reports "https://github.com/jhuapl-saralab/openapi-ocaml/issues")
+ (documentation "https://github.com/jhuapl-saralab/openapi-ocaml")
+ (depends
+  (opium (= 0.20.0))
+  (yojson (= 1.7.0))
+  (core (= v0.14.1))
+  (ppx_yojson_conv (= v0.14.0))
+  (ppx_deriving (= 5.2.1))))
