@@ -4,6 +4,7 @@ val empty : t;;
 
 type builder = t -> t;;
 
+(* Specify openapi spec metadata *)
 val title            : string -> builder;;
 val description      : string -> builder;;
 val terms_of_service : string -> builder;;
@@ -12,6 +13,8 @@ val license          : Spec.license_object -> builder;;
 val version          : string -> builder;;
 
 type 'a or_ref = 'a Json_schema.or_ref;;
+
+(* Add a named component to an application spec *)
 
 val schema           : string -> Json_schema.schema or_ref -> builder;;
 val response         : string -> Spec.response_object or_ref -> builder;;
@@ -23,6 +26,22 @@ val security_scheme  : string -> Spec.security_scheme_object or_ref -> builder;;
 val link             : string -> Spec.link_object or_ref -> builder;;
 val callback         : string -> Spec.callback_object or_ref -> builder;;
 
+
+(* Return a JSON reference to a named component of a spec
+   (Note: doesn't confirm that the component actually exists)
+*)
+
+val schema_ref          : string -> Json_schema.schema or_ref;;
+val response_ref        : string -> Spec.response_object or_ref;;
+val parameter_ref       : string -> Spec.parameter_object or_ref;;
+val example_ref         : string -> Spec.example_object or_ref;;
+val request_body_ref    : string -> Spec.request_body_object or_ref;;
+val header_ref          : string -> Spec.header_object or_ref;;
+val security_scheme_ref : string -> Spec.security_scheme_object or_ref;;
+val link_ref            : string -> Spec.link_object or_ref;;
+val callback_ref        : string -> Spec.callback_object or_ref;;
+
+(* Wrap standard opium builders *)
 val host             : string -> builder;;
 val backlog          : int -> builder;;
 val port             : int -> builder;;

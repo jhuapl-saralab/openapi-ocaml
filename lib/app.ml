@@ -98,6 +98,25 @@ let callback n c a =
     |> Option.return
     |> fun cs -> {a with spec = {a.spec with components = cs}}
 
+let schema_ref x          = "#/components/schemas/"^x
+                            |> Json_schema.Helpers.ref
+let response_ref x        = "#/components/responses/"^x
+                            |> Json_schema.Helpers.ref
+let parameter_ref x       = "#/components/parameters/"^x
+                            |> Json_schema.Helpers.ref
+let example_ref x         = "#/components/examples/"^x
+                            |> Json_schema.Helpers.ref
+let request_body_ref x    = "#/components/requestBodies/"^x
+                            |> Json_schema.Helpers.ref
+let header_ref x          = "#/components/headers/"^x
+                            |> Json_schema.Helpers.ref
+let security_scheme_ref x = "#/components/securitySchemes/"^x
+                            |> Json_schema.Helpers.ref
+let link_ref x            = "#/components/link/"^x
+                            |> Json_schema.Helpers.ref
+let callback_ref x        = "#/components/callbacks/"^x
+                            |> Json_schema.Helpers.ref
+
 let host s a = {a with app = O.host s a.app};;
 let backlog i a = {a with app = O.backlog i a.app};;
 let port p a = {a with app = O.port p a.app};;
