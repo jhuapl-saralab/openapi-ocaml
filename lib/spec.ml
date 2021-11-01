@@ -82,7 +82,7 @@ type response_object = {
                 [@yojson.option];
 } [@@deriving make,show,yojson];;
 
-type responses_object = response_object map [@@deriving show, yojson];;
+type responses_object = response_object or_ref map [@@deriving show, yojson];;
 
 type parameter_location = Query | Header | Path | Cookie [@@deriving show,yojson];;
 let parameter_location_of_yojson = function
