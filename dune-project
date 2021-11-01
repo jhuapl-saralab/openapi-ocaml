@@ -7,7 +7,7 @@
  (version 0.3.2)
  (synopsis "Openapi documentation generation for Opium")
  (description "Shim layer around Opium.App (https://github.com/rgrinberg/opium/) for producing Openapi documentation pages")
- (license "BSD 3-Clause")
+ (license "BSD-3-Clause")
  (authors "J. Aaron Pendergrass <james.pendergrass@jhuapl.edu>")
  (maintainers "J. Aaron Pendergrass <james.pendergrass@jhuapl.edu>")
  (homepage "https://github.com/jhuapl-saralab/openapi-ocaml")
