@@ -86,6 +86,8 @@ type schema = {
   const       : any option [@yojson.optional];    
   properties  : schema map option [@yojson.optional];
   items       : schema or_ref option [@yojson.optional];
+  prefix_items : schema or_ref list option [@key "prefixItems"]
+                 [@yojson.optional];
   format      : string option [@yojson.optional];
   any_of      : schema or_ref list option [@key "anyOf"] [@yojson.optional]
 } [@@deriving make,show,yojson]
@@ -99,9 +101,11 @@ module Helpers = struct
   let empty    = make_schema ();;
   let title t s = {s with title = Some t};;
   let description d s = {s with description = Some d};;
+  let const d s = {s with const = Some d};;
   let typ t s  = {s with typ = Some t};;
   let format f s = {s with format = Some f};;
   let items is s = {s with items = Some is};;
+  let prefix_items pis s = {s with prefix_items = Some pis};;
   let enum xs s  = {s with enum  = Some xs};;
   let any_of xs s = {s with any_of = Some xs};;
   let properties ps s = {s with properties = Some ps};;
