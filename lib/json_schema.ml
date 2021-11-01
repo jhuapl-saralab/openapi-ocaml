@@ -87,6 +87,7 @@ type schema = {
   properties  : schema map option [@yojson.optional];
   items       : schema or_ref option [@yojson.optional];
   format      : string option [@yojson.optional];
+  any_of      : schema or_ref list option [@key "anyOf"] [@yojson.optional]
 } [@@deriving make,show,yojson]
 [@@yojson.allow_extra_fields]
 ;;
@@ -102,6 +103,7 @@ module Helpers = struct
   let format f s = {s with format = Some f};;
   let items is s = {s with items = Some is};;
   let enum xs s  = {s with enum  = Some xs};;
+  let any_of xs s = {s with any_of = Some xs};;
   let properties ps s = {s with properties = Some ps};;
   let property k v s = {s with properties = Option.value ~default:[] s.properties
                                             |> (fun ps -> ps@[k,v])
