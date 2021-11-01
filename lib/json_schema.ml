@@ -1,5 +1,4 @@
 open Core;;
-open Base.Poly;;
 
 module Yojson_conv = Ppx_yojson_conv_lib.Yojson_conv;;
 
@@ -78,29 +77,16 @@ let yojson_of_json_schema_type : json_schema_type -> Yojson.Safe.t = function
 let pp_json_schema_type fmt x = Yojson.Safe.pp fmt (yojson_of_json_schema_type x);;
 
 type schema = {
-  schema      : string option
-                [@key "$schema"] [@default None]
-                [@yojson_drop_default (=)];
-  id_         : string option
-                [@key "$id"] [@default None]
-                [@yojson_drop_default (=)];
-  title       : string option
-                [@default None] [@yojson_drop_default (=)];
-  description : string option
-                [@default None] [@yojson_drop_default (=)];
-  typ         : json_schema_type or_ref option
-                [@key "type"] [@default None]
-                [@yojson_drop_default (=)];
-  enum        : any list option
-                [@default None] [@yojson_drop_default (=)];
-  const       : any option
-                [@default None] [@yojson_drop_default (=)];    
-  properties  : schema map option
-                [@default None] [@yojson_drop_default (=)];
-  items       : schema or_ref option
-                [@default None] [@yojson_drop_default (=)];
-  format      : string option
-                [@default None] [@yojson_drop_default (=)];
+  schema      : string option [@key "$schema"] [@yojson.optional];
+  id_         : string option [@key "$id"]  [@yojson.optional];
+  title       : string option [@yojson.optional];
+  description : string option [@yojson.optional];
+  typ         : json_schema_type or_ref option [@key "type"] [@yojson.optional];
+  enum        : any list option [@yojson.optional];
+  const       : any option [@yojson.optional];    
+  properties  : schema map option [@yojson.optional];
+  items       : schema or_ref option [@yojson.optional];
+  format      : string option [@yojson.optional];
 } [@@deriving make,show,yojson]
 [@@yojson.allow_extra_fields]
 ;;
