@@ -6,7 +6,7 @@ description:
   "Shim layer around Opium.App (https://github.com/rgrinberg/opium/) for producing Openapi documentation pages"
 maintainer: ["J. Aaron Pendergrass <james.pendergrass@jhuapl.edu>"]
 authors: ["J. Aaron Pendergrass <james.pendergrass@jhuapl.edu>"]
-license: "BSD 3-Clause"
+license: "BSD-3-Clause"
 homepage: "https://github.com/jhuapl-saralab/openapi-ocaml"
 doc: "https://github.com/jhuapl-saralab/openapi-ocaml"
 bug-reports: "https://github.com/jhuapl-saralab/openapi-ocaml/issues"
