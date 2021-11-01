@@ -77,6 +77,7 @@ type schema = {
   enum        : any list option [@yojson.optional];
   const       : any option [@yojson.optional];    
   properties  : schema map option [@yojson.optional];
+  required    : string list option [@yojson.optional];
   items       : schema or_ref option [@yojson.optional];
   prefix_items : schema or_ref list option [@key "prefixItems"]
                  [@yojson.optional];
@@ -101,9 +102,17 @@ module Helpers = struct
   let enum xs s  = {s with enum  = Some xs};;
   let any_of xs s = {s with any_of = Some xs};;
   let properties ps s = {s with properties = Some ps};;
-  let property k v s = {s with properties = Option.value ~default:[] s.properties
-                                            |> (fun ps -> ps@[k,v])
-                                            |> Option.return};;
+  let require p s   = {s with required = Option.value ~default:[] s.required
+                                         |> (fun r -> p::r)
+                                         |> Option.return}
+  let property ?(required = false) k v s =
+      {s with properties = Option.value ~default:[] s.properties
+                                   |> (fun ps -> ps@[k,v])
+                                   |> Option.return;}
+      |> if required
+      then require k
+      else fun s -> s;;
+                      
   let null          = empty |> typ (Obj Null);;
   let boolean       = empty |> typ (Obj Boolean);;
   let object_       = empty |> typ (Obj Object);;
