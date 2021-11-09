@@ -4,7 +4,7 @@
 
 (package
  (name openapi)
- (version 0.4.0)
+ (version 0.4.1)
  (synopsis "Openapi documentation generation for Opium")
  (description "Shim layer around Opium.App (https://github.com/rgrinberg/opium/) for producing Openapi documentation pages")
  (license "BSD-3-Clause")
