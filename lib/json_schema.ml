@@ -69,22 +69,55 @@ let yojson_of_json_schema_type : json_schema_type -> Yojson.Safe.t  =
 let pp_json_schema_type fmt x = Yojson.Safe.pp fmt (yojson_of_json_schema_type x);;
 
 type schema = {
+  (* Common fields *)
   schema      : string option [@key "$schema"] [@yojson.optional];
   id_         : string option [@key "$id"]  [@yojson.optional];
   title       : string option [@yojson.optional];
   description : string option [@yojson.optional];
+  default     : any option [@yojson.optional];
+  examples    : any list option [@yojson.optional];
+  read_only   : bool option [@yojson.optional];
+  write_only  : bool option [@yojson.optional];
+  comment     : string option [@key "$comment"] [@yojson.optional];
+  
   typ         : json_schema_type or_ref option [@key "type"] [@yojson.optional];
   enum        : any list option [@yojson.optional];
-  const       : any option [@yojson.optional];    
-  properties  : schema map option [@yojson.optional];
-  required    : string list option [@yojson.optional];
+  const       : any option [@yojson.optional];
+
+  (* numeric type fields *)
+  multiple_of      : float option [@key "multipleOf"] [@yojson.optional];
+  minimum          : float option [@yojson.optional];
+  exclusiveMinimum : float option [@key "exclusiveMinimum"] [@yojson.optional];
+  maximum          : float option [@yojson.optional];
+  exclusiveMaximum : float option [@key "exclusiveMaximum"] [@yojson.optional];
+  
+  (* object type only fields *)
+  properties            : schema or_ref map option [@yojson.optional];
+  pattern_properties    : schema or_ref map option
+                          [@key "patternProperties"] [@yojson.optional];
+  additional_properties : schema or_ref option [@key "additionalProperties"] [@yojson.optional];
+  required              : string list option [@yojson.optional];
+  property_names        : schema or_ref option [@key "propertyNames"] [@yojson.optional];
+  min_properties        : int option [@key "minProperties"] [@yojson.optional];
+  max_properties        : int option [@key "maxProperties"] [@yojson.optional];
+
+  (* array type only fields *)
+  min_items   : int option [@key "minItems"] [@yojson.optional];
+  max_items   : int option [@key "maxItems"] [@yojson.optional];
   items       : schema or_ref option [@yojson.optional];
   prefix_items : schema or_ref list option [@key "prefixItems"]
                  [@yojson.optional];
+  (* string type only fields *)
   format      : string option [@yojson.optional];
-  any_of      : schema or_ref list option [@key "anyOf"] [@yojson.optional]
-} [@@deriving make,show,yojson]
-[@@yojson.allow_extra_fields]
+  pattern     : string option [@yojson.optional];
+  min_length  : int option [@key "minLength"] [@yojson.optional];
+  max_length  : int option [@key "maxLength"] [@yojson.optional];
+
+  (* schema composition *)
+  all_of      : schema or_ref list option [@key "allOf"] [@yojson.optional];
+  any_of      : schema or_ref list option [@key "anyOf"] [@yojson.optional];
+  one_of      : schema or_ref list option [@key "oneOf"] [@yojson.optional]  
+} [@@deriving make,show,yojson] [@@yojson.allow_extra_fields]
 ;;
 
 module Helpers = struct
@@ -102,6 +135,7 @@ module Helpers = struct
   let enum xs s  = {s with enum  = Some xs};;
   let any_of xs s = {s with any_of = Some xs};;
   let properties ps s = {s with properties = Some ps};;
+  let additional_properties ps s = {s with additional_properties = Some ps};;
   let require p s   = {s with required = Option.value ~default:[] s.required
                                          |> (fun r -> p::r)
                                          |> Option.return}
