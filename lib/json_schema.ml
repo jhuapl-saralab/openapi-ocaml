@@ -101,53 +101,53 @@ let pp_json_schema_type fmt x = Yojson.Safe.pp fmt (yojson_of_json_schema_type x
 
 type schema = {
   (* Common fields *)
-  schema      : string option [@key "$schema"] [@yojson.optional];
-  id_         : string option [@key "$id"]  [@yojson.optional];
-  title       : string option [@yojson.optional];
-  description : string option [@yojson.optional];
-  default     : any option [@yojson.optional];
-  examples    : any list option [@yojson.optional];
-  read_only   : bool option [@yojson.optional];
-  write_only  : bool option [@yojson.optional];
-  comment     : string option [@key "$comment"] [@yojson.optional];
+  schema      : string option [@key "$schema"] [@yojson.option];
+  id_         : string option [@key "$id"]  [@yojson.option];
+  title       : string option [@yojson.option];
+  description : string option [@yojson.option];
+  default     : any option [@yojson.option];
+  examples    : any list option [@yojson.option];
+  read_only   : bool option [@yojson.option];
+  write_only  : bool option [@yojson.option];
+  comment     : string option [@key "$comment"] [@yojson.option];
   
-  typ         : json_schema_type or_ref option [@key "type"] [@yojson.optional];
-  enum        : any list option [@yojson.optional];
-  const       : any option [@yojson.optional];
+  typ         : json_schema_type or_ref option [@key "type"] [@yojson.option];
+  enum        : any list option [@yojson.option];
+  const       : any option [@yojson.option];
 
   (* numeric type fields *)
-  multiple_of      : float option [@key "multipleOf"] [@yojson.optional];
-  minimum          : float option [@yojson.optional];
-  exclusiveMinimum : float option [@key "exclusiveMinimum"] [@yojson.optional];
-  maximum          : float option [@yojson.optional];
-  exclusiveMaximum : float option [@key "exclusiveMaximum"] [@yojson.optional];
+  multiple_of      : float option [@key "multipleOf"] [@yojson.option];
+  minimum          : float option [@yojson.option];
+  exclusiveMinimum : float option [@key "exclusiveMinimum"] [@yojson.option];
+  maximum          : float option [@yojson.option];
+  exclusiveMaximum : float option [@key "exclusiveMaximum"] [@yojson.option];
   
   (* object type only fields *)
-  properties            : schema or_ref map option [@yojson.optional];
+  properties            : schema or_ref map option [@yojson.option];
   pattern_properties    : schema or_ref map option
-                          [@key "patternProperties"] [@yojson.optional];
-  additional_properties : schema or_ref option [@key "additionalProperties"] [@yojson.optional];
-  required              : string list option [@yojson.optional];
-  property_names        : schema or_ref option [@key "propertyNames"] [@yojson.optional];
-  min_properties        : int option [@key "minProperties"] [@yojson.optional];
-  max_properties        : int option [@key "maxProperties"] [@yojson.optional];
+                          [@key "patternProperties"] [@yojson.option];
+  additional_properties : schema or_ref option [@key "additionalProperties"] [@yojson.option];
+  required              : string list option [@yojson.option];
+  property_names        : schema or_ref option [@key "propertyNames"] [@yojson.option];
+  min_properties        : int option [@key "minProperties"] [@yojson.option];
+  max_properties        : int option [@key "maxProperties"] [@yojson.option];
 
   (* array type only fields *)
-  min_items   : int option [@key "minItems"] [@yojson.optional];
-  max_items   : int option [@key "maxItems"] [@yojson.optional];
-  items       : schema or_ref option [@yojson.optional];
+  min_items   : int option [@key "minItems"] [@yojson.option];
+  max_items   : int option [@key "maxItems"] [@yojson.option];
+  items       : schema or_ref option [@yojson.option];
   prefix_items : schema or_ref list option [@key "prefixItems"]
-                 [@yojson.optional];
+                 [@yojson.option];
   (* string type only fields *)
-  format      : string option [@yojson.optional];
-  pattern     : string option [@yojson.optional];
-  min_length  : int option [@key "minLength"] [@yojson.optional];
-  max_length  : int option [@key "maxLength"] [@yojson.optional];
+  format      : string option [@yojson.option];
+  pattern     : string option [@yojson.option];
+  min_length  : int option [@key "minLength"] [@yojson.option];
+  max_length  : int option [@key "maxLength"] [@yojson.option];
 
   (* schema composition *)
-  all_of      : schema or_ref list option [@key "allOf"] [@yojson.optional];
-  any_of      : schema or_ref list option [@key "anyOf"] [@yojson.optional];
-  one_of      : schema or_ref list option [@key "oneOf"] [@yojson.optional]  
+  all_of      : schema or_ref list option [@key "allOf"] [@yojson.option];
+  any_of      : schema or_ref list option [@key "anyOf"] [@yojson.option];
+  one_of      : schema or_ref list option [@key "oneOf"] [@yojson.option]
 } [@@deriving make,show,yojson] [@@yojson.allow_extra_fields]
 ;;
 
