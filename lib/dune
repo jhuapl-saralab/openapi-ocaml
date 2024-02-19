@@ -31,6 +31,14 @@
  (name openapi)
  (public_name openapi)
  (modules Spec App Json_schema)
- (libraries yojson core opium)
+ (libraries yojson core opium ppx_yojson_conv_lib)
  (preprocess (pps ppx_yojson_conv ppx_deriving.std))
  )
+
+(library
+ (name ppx_deriving_json_schema)
+ (public_name ppx_deriving_json_schema)
+ (kind ppx_deriver)
+ (modules ppx_deriving_json_schema)
+ (libraries ppx_deriving ppxlib core yojson ppx_yojson_conv_lib)
+ (preprocess (pps ppxlib.metaquot ppx_deriving.make)))

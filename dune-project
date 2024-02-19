@@ -46,7 +46,23 @@
  (bug_reports "https://github.com/jhuapl-saralab/openapi-ocaml/issues")
  (depends
   (opium (>= 0.20.0))
-  (yojson (>= 1.7.0))
-  (core (>= v0.14.1))
-  (ppx_yojson_conv (>= v0.14.0))
+  (yojson (>= 2.1.2))
+  (core (>= v0.15.0))
+  (ppx_yojson_conv (and (>= v0.15.0) (< v0.16.0)))
+  (ppx_yojson_conv_lib (and (>= v0.15.0) (< v0.16.0)))
   (ppx_deriving (>= 5.2.1))))
+
+(package
+ (name ppx_deriving_json_schema)
+ (version 0.0.1)
+ (synopsis "Ppx deriver for generating JSON schema objects from type definitions")
+ (license "BSD-3-Clause")
+ (authors "J. Aaron Pendergrass <james.pendergrass@jhuapl.edu>")
+ (maintainers "J. Aaron Pendergrass <james.pendergrass@jhuapl.edu>")
+ (homepage "https://github.com/jhuapl-saralab/openapi-ocaml")
+ (source (github "jhuapl-saralab/openapi-ocaml"))
+ (bug_reports "https://github.com/jhuapl-saralab/openapi-ocaml/issues")
+ (depends
+  (ppxlib (>= 0.31.0))
+  (core (>= v0.14.1))
+  (openapi (= 0.6.0))))

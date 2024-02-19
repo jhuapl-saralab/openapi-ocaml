@@ -1,0 +1,50 @@
+stages:
+  - build
+  - test
+
+variables:
+  OPAMYES: "true"
+
+image: ocaml/opam:ubuntu-22.04
+
+before_script:
+  - sudo apt-get update
+  - sudo apt-get install -y curl
+  - |
+    if [ -n "${EXTRA_CERTS_URL}" ]; then \
+      sudo mkdir -p /usr/local/share/ca-certificates/extras && \
+      sudo curl -o /usr/local/share/ca-certificates/extras/extra-certs.crt \
+            ${EXTRA_CERTS_URL} && \
+      sudo update-ca-certificates || /bin/true; \
+    fi
+  - opam init -y
+  - opam switch create -y 5.0.0
+  - eval $(opam env)
+  - opam install -y dune
+  - opam pin add --no-action .
+  - opam depext openapi ppx_deriving_json_schema
+  - opam install --deps-only openapi ppx_deriving_json_schema
+
+build:
+  stage: build
+  script:
+    - opam install openapi ppx_deriving_json_schema
+  tags:
+    - docker
+
+test:
+  stage: test
+  tags:
+    - docker
+  before_script:
+    - !reference [before_script]
+    - sudo apt-get install -y python3-venv
+    - python3 -m venv ./venv
+    - . ./venv/bin/activate
+    - pip install check-jsonschema
+  script:
+    - dune runtest
+  artifacts:
+    paths:
+      - _coverage
+    expire_in: 2 weeks
