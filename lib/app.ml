@@ -32,6 +32,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 open Core;;
 open Base.Poly;;
 module O = Opium.App;;
+module Spec = Openapi.Spec;;
+module Json_schema = Openapi.Json_schema;;
 
 type t = {
   spec : Spec.t;

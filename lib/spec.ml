@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 open Core;;
 open Json_schema;;
+open Ppx_yojson_conv_lib.Yojson_conv.Primitives;;
 
 type contact_object = {
   name  : string option [@yojson.option];

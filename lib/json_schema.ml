@@ -30,10 +30,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
 open Core;;
+open Ppx_yojson_conv_lib.Yojson_conv.Primitives;;
 
 module Yojson_conv = Ppx_yojson_conv_lib.Yojson_conv;;
 
-type 'a map = (string * 'a) list [@@deriving show];;
+type 'a map = (string * 'a) list [@@deriving eq,show];;
 
 let yojson_of_map f xs : Yojson.Safe.t =
   `Assoc (List.map ~f:(fun (k,v) -> (k, f v)) xs);;
@@ -42,17 +43,17 @@ let map_of_yojson (f : Yojson.Safe.t -> 'a) : Yojson.Safe.t ->'a map = function
   | `Assoc xs -> List.map ~f:(fun (k,v) -> (k, (f v))) xs
   | x -> raise (Yojson_conv.Of_yojson_error (Failure "unexpected input", x))
 
-type any = Yojson.Safe.t;;
+type any = Yojson.Safe.t [@@deriving eq];;
 let pp_any = Yojson.Safe.pp;;
 let any_of_yojson x = x;;
 let yojson_of_any x = x;;
 
-type any_map = any map [@@deriving show];;
+type any_map = any map [@@deriving show, eq];;
 let any_map_of_yojson = map_of_yojson (fun v -> v);; (* schema_object_of_yojson *);;
 let yojson_of_any_map = yojson_of_map (fun v -> v);; (* yojson_of_schema_object *);;
 
 
-type 'a or_ref = Obj of 'a | Ref of string;;
+type 'a or_ref = Obj of 'a | Ref of string [@@deriving eq];;
 
 let yojson_of_or_ref f = function
   | Obj x -> f x
@@ -73,7 +74,7 @@ type json_schema_type =
     | Array
     | Number
     | String
-    | Integer;;
+    | Integer [@@deriving eq];;
 
 let string_of_json_schema_type = function
     | Null -> "null"
@@ -147,8 +148,11 @@ type schema = {
   (* schema composition *)
   all_of      : schema or_ref list option [@key "allOf"] [@yojson.option];
   any_of      : schema or_ref list option [@key "anyOf"] [@yojson.option];
-  one_of      : schema or_ref list option [@key "oneOf"] [@yojson.option]
-} [@@deriving make,show,yojson] [@@yojson.allow_extra_fields]
+  one_of      : schema or_ref list option [@key "oneOf"] [@yojson.option];
+
+  defs : schema map option [@key "$defs"] [@yojson.option]
+    
+} [@@deriving eq,make,show,yojson] [@@yojson.allow_extra_fields]
 ;;
 
 module Helpers = struct
@@ -156,6 +160,7 @@ module Helpers = struct
   let ref r = Ref r;;
 
   let empty    = make_schema ();;
+  let id_ i s = {s with id_ = Some i};;
   let title t s = {s with title = Some t};;
   let description d s = {s with description = Some d};;
   let const d s = {s with const = Some d};;
@@ -163,8 +168,11 @@ module Helpers = struct
   let format f s = {s with format = Some f};;
   let items is s = {s with items = Some is};;
   let prefix_items pis s = {s with prefix_items = Some pis};;
+  let min_items n s = {s with min_items = Some n};;
+  let max_items n s = {s with max_items = Some n};;
   let enum xs s  = {s with enum  = Some xs};;
   let any_of xs s = {s with any_of = Some xs};;
+  let one_of xs s = {s with one_of = Some xs};;
   let properties ps s = {s with properties = Some ps};;
   let additional_properties ps s = {s with additional_properties = Some ps};;
   let require p s   = {s with required = Option.value ~default:[] s.required
@@ -177,7 +185,11 @@ module Helpers = struct
       |> if required
       then require k
       else fun s -> s;;
-                      
+
+  let def n d s     = {s with defs = Option.value s.defs ~default:[]
+                                     |> (fun defs -> defs@[n,d])
+                                     |> Option.return};;
+
   let null          = empty |> typ (Obj Null);;
   let boolean       = empty |> typ (Obj Boolean);;
   let object_       = empty |> typ (Obj Object);;
