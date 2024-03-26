@@ -12,7 +12,7 @@ depends: [
   "dune" {>= "2.8"}
   "ppxlib" {>= "0.31.0"}
   "core" {>= "v0.14.1"}
-  "openapi" {= "0.6.0"}
+  "openapi" {= "0.7.0"}
   "odoc" {with-doc}
 ]
 build: [

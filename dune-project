@@ -35,7 +35,7 @@
 
 (package
  (name openapi)
- (version 0.6.0)
+ (version 0.7.0)
  (synopsis "Openapi documentation generation for Opium")
  (description "Shim layer around Opium.App (https://github.com/rgrinberg/opium/) for producing Openapi documentation pages")
  (license "BSD-3-Clause")
@@ -65,4 +65,4 @@
  (depends
   (ppxlib (>= 0.31.0))
   (core (>= v0.14.1))
-  (openapi (= 0.6.0))))
+  (openapi (= 0.7.0))))

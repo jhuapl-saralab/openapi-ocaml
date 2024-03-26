@@ -1,3 +1,11 @@
+## v0.7.0 (2024-03-26)
+### Added
+- ppx_deriving_json_schema PPX deriver
+- compatibility with Core v0.16.0
+- `defs` field to `Json_schema.schema` record type
+- In `Json_schema.Helpers` module, helper functions `id_`, `one_of`, and `def`
+
+###
 ## v0.6.0 (2022-023-17)
 ### Added
 - Meta files for dune release
