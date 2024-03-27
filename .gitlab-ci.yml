@@ -18,7 +18,6 @@ before_script:
       sudo update-ca-certificates || /bin/true; \
     fi
   - opam init -y
-  - opam switch create -y 5.0.0
   - eval $(opam env)
   - opam install -y dune
   - opam pin add --no-action .
