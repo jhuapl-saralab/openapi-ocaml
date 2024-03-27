@@ -11,8 +11,8 @@ bug-reports: "https://github.com/jhuapl-saralab/openapi-ocaml/issues"
 depends: [
   "dune" {>= "2.8"}
   "ppxlib" {>= "0.31.0"}
-  "core" {>= "v0.14.1"}
-  "openapi" {= "0.7.0"}
+  "core" {>= "v0.16.0"}
+  "openapi" {= "0.7.1"}
   "odoc" {with-doc}
 ]
 build: [
