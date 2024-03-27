@@ -30,6 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
 open Core;;
+open Ppx_yojson_conv_lib.Yojson_conv.Primitives;;
 
 type poly_var = [`X of int | `Y of string]
 [@@deriving yojson,json_schema];;

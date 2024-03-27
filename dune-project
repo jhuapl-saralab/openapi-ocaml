@@ -35,7 +35,7 @@
 
 (package
  (name openapi)
- (version 0.7.0)
+ (version 0.7.1)
  (synopsis "Openapi documentation generation for Opium")
  (description "Shim layer around Opium.App (https://github.com/rgrinberg/opium/) for producing Openapi documentation pages")
  (license "BSD-3-Clause")
@@ -47,9 +47,9 @@
  (depends
   (opium (>= 0.20.0))
   (yojson (>= 2.1.2))
-  (core (>= v0.15.0))
-  (ppx_yojson_conv (and (>= v0.15.0) (< v0.16.0)))
-  (ppx_yojson_conv_lib (and (>= v0.15.0) (< v0.16.0)))
+  (core (>= v0.16.0))
+  (ppx_yojson_conv (>= v0.16.0))
+  (ppx_yojson_conv_lib (>= v0.16.0))
   (ppx_deriving (>= 5.2.1))))
 
 (package
@@ -64,5 +64,5 @@
  (bug_reports "https://github.com/jhuapl-saralab/openapi-ocaml/issues")
  (depends
   (ppxlib (>= 0.31.0))
-  (core (>= v0.14.1))
-  (openapi (= 0.7.0))))
+  (core (>= v0.16.0))
+  (openapi (= 0.7.1))))
