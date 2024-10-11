@@ -56,5 +56,7 @@
 
 (rule
  (alias runtest)
+ (package ppx_deriving_json_schema)
+ (enabled_if (= %{env:CHECK_JSONSCHEMA=no} "yes"))
  (deps (:schema test-schema.json) (:obj test-obj.json))
  (action (run check-jsonschema --schemafile %{schema} %{obj})))
