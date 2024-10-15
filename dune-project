@@ -35,7 +35,7 @@
 
 (package
  (name openapi)
- (version 1.0.0)
+ (version 1.0.1)
  (synopsis "Openapi documentation infrastructure")
  (description "Core types and functions for creating openapi compliant documentation using JSON schemas")
  (license "BSD-3-Clause")
@@ -53,7 +53,7 @@
 
 (package
  (name openapi-opium)
- (version 1.0.0)
+ (version 1.0.1)
  (synopsis "Openapi documentation generation for Opium")
  (description "Shim layer around Opium.App (https://github.com/rgrinberg/opium/) for producing Openapi documentation pages")
  (license "BSD-3-Clause")
@@ -63,12 +63,12 @@
  (source (github "jhuapl-saralab/openapi-ocaml"))
  (bug_reports "https://github.com/jhuapl-saralab/openapi-ocaml/issues")
  (depends
-  (openapi (= 1.0.0))
+  (openapi (= 1.0.1))
   (opium (>= 0.20.0))))
 
 (package
  (name ppx_deriving_json_schema)
- (version 1.0.0)
+ (version 1.0.1)
  (synopsis "Ppx deriver for generating JSON schema objects from type definitions")
  (license "BSD-3-Clause")
  (authors "J. Aaron Pendergrass <james.pendergrass@jhuapl.edu>")
@@ -79,4 +79,4 @@
  (depends
   (ppxlib (>= 0.31.0))
   (core (>= v0.16.0))
-  (openapi (= 1.0.0))))
+  (openapi (= 1.0.1))))

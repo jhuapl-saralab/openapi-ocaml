@@ -29,5 +29,5 @@
 
 (executable
  (name demo)
- (libraries yojson core opium openapi openapi_opium)
+ (libraries yojson core opium openapi openapi-opium)
 )
